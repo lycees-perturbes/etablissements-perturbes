@@ -760,7 +760,14 @@ const OUTRE_MER = ["01", "02", "03", "04", "06"];   // régions = départements 
 const DEPT_OUTRE_MER = { "01": "971", "02": "972", "03": "973", "04": "974", "06": "976" };
 
 // Couleurs des zones : du plus clair (aucun lycée) au plus foncé
-const COULEURS = ["#eef1f4", "#fde9e2", "#f9b9a3", "#f08562", "#d4380d", "#8f2306"];
+// Première couleur : zone sans signalement (vert, pour bien distinguer la
+// France du fond de la page) ; ensuite, du plus clair au plus foncé
+const COULEURS = ["#9fd3a6", "#fde9e2", "#f9b9a3", "#f08562", "#d4380d", "#8f2306"];
+
+// Bordures des régions et départements : couleur et épaisseurs (en pixels)
+const BORDURE = "#000000";
+const EPAISSEUR = 1.5;           // bordure normale
+const EPAISSEUR_FORTE = 3.5;     // zone survolée ou sélectionnée
 // Seuils : une zone va dans la classe i si valeur >= SEUILS[mode][i]
 const SEUILS = {
   nombre:     [0, 1, 3, 6, 11, 21],          // nombre de lycées perturbés
@@ -855,23 +862,23 @@ function styleRegion(feature, totaux) {
   // territoire d'outre-mer ouvert n'a qu'un contour ; tout le reste est
   // voilé de blanc pour mettre en valeur la zone ouverte
   if (deptOuvert) {
-    if (code === outreMerOuvert) return { fillOpacity: 0, color: "#17212b", weight: 2.5, opacity: 1 };
+    if (code === outreMerOuvert) return { fillOpacity: 0, color: BORDURE, weight: EPAISSEUR_FORTE, opacity: 1 };
     if (code === regionOuverte) return INVISIBLE;
-    return { fillColor: "#ffffff", fillOpacity: 0.55, color: "#8a96a3", weight: 1, opacity: 1 };
+    return { fillColor: "#ffffff", fillOpacity: 0.55, color: "#8a96a3", weight: EPAISSEUR, opacity: 1 };
   }
   // Niveau 2 : la région ouverte est cachée (ses départements sont dessinés
   // par-dessus), les autres sont estompées avec un contour gris
   if (code === regionOuverte) return INVISIBLE;
   if (regionOuverte) {
     return { fillColor: couleurPour(valeur(totaux.get(code))), fillOpacity: 0.4,
-             color: "#aab5c0", weight: 1, opacity: 1 };
+             color: "#6b7785", weight: EPAISSEUR, opacity: 1 };
   }
   // Niveau 1
   return {
     fillColor: couleurPour(valeur(totaux.get(code))),
     fillOpacity: 1,
-    color: estSelectionne("region", code) ? "#17212b" : "#ffffff",
-    weight: estSelectionne("region", code) ? 2.5 : 1,
+    color: BORDURE,
+    weight: estSelectionne("region", code) ? EPAISSEUR_FORTE : EPAISSEUR,
     opacity: 1,
   };
 }
@@ -882,14 +889,14 @@ function styleDept(feature, totaux) {
   // carte), ses voisins sont voilés de blanc et restent cliquables
   if (deptOuvert) {
     return code === deptOuvert
-      ? { fillOpacity: 0, color: "#17212b", weight: 2.5, opacity: 1 }
-      : { fillColor: "#ffffff", fillOpacity: 0.55, color: "#8a96a3", weight: 1, opacity: 1 };
+      ? { fillOpacity: 0, color: BORDURE, weight: EPAISSEUR_FORTE, opacity: 1 }
+      : { fillColor: "#ffffff", fillOpacity: 0.55, color: "#8a96a3", weight: EPAISSEUR, opacity: 1 };
   }
   return {
     fillColor: couleurPour(valeur(totaux.get(code))),
     fillOpacity: 1,
-    color: estSelectionne("dept", code) ? "#17212b" : "#ffffff",
-    weight: estSelectionne("dept", code) ? 2.5 : 1,
+    color: BORDURE,
+    weight: estSelectionne("dept", code) ? EPAISSEUR_FORTE : EPAISSEUR,
     opacity: 1,
   };
 }
@@ -1129,7 +1136,7 @@ function survol(couche, styleFn, parFn) {
   couche.on("mouseover", () => {
     if (survolee && survolee !== couche) survolee.fire("mouseout");
     survolee = couche;
-    couche.setStyle({ weight: 2.5, color: "#17212b", opacity: 1 });
+    couche.setStyle({ weight: EPAISSEUR_FORTE, color: BORDURE, opacity: 1 });
     couche.bringToFront();
   });
   couche.on("mouseout", () => {
